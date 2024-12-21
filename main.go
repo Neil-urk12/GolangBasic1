@@ -61,7 +61,7 @@ func login() {
 		pl("Invalid input", err)
 		return
 	}
-
+	pl(username, password)
 }
 
 func register() {
@@ -118,6 +118,9 @@ func register() {
 			accountType:   accountType,
 			accountNumber: accountNumber,
 		}
+		pl("Account created successfully!")
+		pl("Your account number is: ", accountNumber)
+		accounts = append(accounts, newAccount)
 	}
 }
 
