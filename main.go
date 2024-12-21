@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math/rand"
 	"os"
 )
 
@@ -64,14 +65,62 @@ func login() {
 }
 
 func register() {
-	while true {
+	for {
 		reader := bufio.NewReader(os.Stdin)
 		pl("Register")
-		pl("Enter your username: ")
+
+		pl("Enter your username (min 8 characters): ")
 		username, err := reader.ReadString('\n')
 		if err != nil {
 			pl("Invalid input", err)
-			break
+			continue
+		} else if len(username) < 8 {
+			pl("Username must be at least 8 characters long!\nPlease try again!")
+			continue
+		}
+
+		pl("Enter your password (min 8 characters) : ")
+		password, err := reader.ReadString('\n')
+		if err != nil {
+			pl("Invalid input", err)
+			continue
+		} else if len(password) < 8 {
+			pl("Password must be at least 8 characters long!\nPlease try again!")
+			continue
+		}
+
+		pl("Enter you password again : ")
+		password2, err := reader.ReadString('\n')
+		if err != nil {
+			pl("Invalid input", err)
+			continue
+		} else if len(password2) < 8 {
+			pl("Password must be at least 8 characters long!\nPlease try again!")
+			continue
+		} else if password != password2 {
+			pl("Passwords do not match!\nPlease try again!")
+			continue
+		}
+
+		pl("Enter your account type (savings/checkings) : ")
+		accountType, err := reader.ReadString('\n')
+		if err != nil {
+			pl("Invalid input", err)
+			continue
+		}
+		accountNumber := accountNumberGenerator()
+		balance := 0.0
+
+		newAccount := Account{
+			username:      username,
+			password:      password,
+			balance:       balance,
+			accountType:   accountType,
+			accountNumber: accountNumber,
 		}
 	}
+}
+
+func accountNumberGenerator() int {
+	return rand.Intn(1000000)
 }
