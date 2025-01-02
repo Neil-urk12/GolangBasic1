@@ -78,6 +78,47 @@ func deposit(reader *bufio.Reader, account Account) {
 	}
 }
 
+func fundTransfer(reader *bufio.Reader, userAccount Account) {
+	for {
+		pl("Enter the account number of the recipient : ")
+		input, err := reader.ReadString('\n')
+		if err != nil {
+			pl("Invalid input!\nPlease try again!")
+			continue
+		}
+		recipientAccountNumber, err := strconv.Atoi(input)
+		if err != nil {
+			pl("Invalid input!\nPlease try again!")
+			continue
+		}
+
+		pl("Enter the amount to transfer : ")
+		input, err = reader.ReadString('\n')
+		if err != nil {
+			pl("Invalid input")
+		}
+		amount, err := strconv.ParseFloat(input, 64)
+		if err != nil {
+			pl("Invalid input!\nPlease try again!")
+			continue
+		}
+
+		for _, recipientAccount := range accounts {
+			if recipientAccount.accountNumber == recipientAccountNumber {
+				if amount >= userAccount.balance {
+					pl("Insufficient funds!\nPlease try again!")
+					continue
+				} else {
+					userAccount.balance -= amount
+					recipientAccount.balance += amount
+					pl("Fund transfer successful!")
+					pl("Your new balance is : ", userAccount.balance)
+					return
+				}
+			}
+		}
+	}
+}
 
 func withdraw(reader *bufio.Reader, account Account) {
 	for {
