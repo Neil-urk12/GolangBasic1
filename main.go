@@ -34,11 +34,11 @@ func loginScreen(reader *bufio.Reader) {
 		return
 	}
 	switch choice {
-	case 1:
+	case '1':
 		login(reader)
-	case 2:
+	case '2':
 		register(reader)
-	case 3:
+	case '3':
 		pl("Exiting...")
 		return
 	default:
