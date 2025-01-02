@@ -35,9 +35,9 @@ func loginScreen(reader *bufio.Reader) {
 	}
 	switch choice {
 	case 1:
-		login()
+		login(reader)
 	case 2:
-		register()
+		register(reader)
 	case 3:
 		pl("Exiting...")
 		return
@@ -46,8 +46,7 @@ func loginScreen(reader *bufio.Reader) {
 	}
 }
 
-func login() {
-	reader := bufio.NewReader(os.Stdin)
+func login(reader *bufio.Reader) {
 	pl("Login")
 	pl("Enter your username: ")
 	username, err := reader.ReadString('\n')
@@ -64,9 +63,8 @@ func login() {
 	pl(username, password)
 }
 
-func register() {
+func register(reader *bufio.Reader) {
 	for {
-		reader := bufio.NewReader(os.Stdin)
 		pl("Register")
 
 		pl("Enter your username (min 8 characters): ")
