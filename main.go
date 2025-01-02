@@ -25,6 +25,10 @@ func main() {
 	loginScreen(reader)
 }
 
+func mainMenu(reader *bufio.Reader, account Account) {
+
+}
+
 func loginScreen(reader *bufio.Reader) {
 	pl("1. Login  2. Register  3. Exit")
 	pl("Enter you choice: ")
@@ -61,6 +65,18 @@ func login(reader *bufio.Reader) {
 		return
 	}
 	pl(username, password)
+	for _, account := range accounts {
+		if account.username == username {
+			if account.password == password {
+				pl("Login successful!")
+				pl("Welcome", username)
+				mainMenu(reader, account)
+			} else {
+				pl("Incorrect password!\nPlease try again!")
+				return
+			}
+		}
+	}
 }
 
 func register(reader *bufio.Reader) {
