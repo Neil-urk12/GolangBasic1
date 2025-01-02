@@ -78,6 +78,34 @@ func deposit(reader *bufio.Reader, account Account) {
 	}
 }
 
+
+func withdraw(reader *bufio.Reader, account Account) {
+	for {
+		pl("Enter the amount to withdraw : ")
+		input, err := reader.ReadString('\n')
+		if err != nil {
+			pl("Invalid input!\nPlease try again!")
+			continue
+		}
+
+		amount, err := strconv.ParseFloat(input, 64)
+		if err != nil {
+			pl("Invalid input!\nPlease try again!")
+			continue
+		}
+
+		if amount >= account.balance {
+			pl("Insufficient funds!\nPlease try again!")
+			continue
+		} else {
+			account.balance -= amount
+			pl("Withdrawal successful!")
+			pl("Your new balance is : ", account.balance)
+			return
+		}
+	}
+}
+
 func checkBalance(account Account) {
 	pl("Your balance is : ", account.balance)
 }
