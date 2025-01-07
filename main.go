@@ -18,7 +18,9 @@ type Account struct {
 	accountNumber int
 }
 
-var accounts []Account
+// var accounts []Account // Slice of accounts from previous implementation
+var accounts map[int]Account
+var accountsByUsername map[string]Account
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
@@ -84,7 +86,12 @@ func deposit(reader *bufio.Reader, account Account) {
 			continue
 		}
 
-		account.balance += amount
+		mappedAccount := accounts[account.accountNumber]
+		mappedAccount.balance += amount
+
+		accounts[account.accountNumber] = mappedAccount
+		accountsByUsername[account.username] = mappedAccount
+
 		pl("Deposit successful!")
 		pl("Your new balance is : ", account.balance)
 		reader.ReadString('\n')
@@ -92,7 +99,8 @@ func deposit(reader *bufio.Reader, account Account) {
 	}
 }
 
-func fundTransfer(reader *bufio.Reader, userAccount Account) {
+func fundTransfer(reader *bufio.Reader, account Account) {
+	userAccount := accounts[account.accountNumber]
 	for {
 		pl("Enter the account number of the recipient or -1 to cancel: ")
 		input, err := reader.ReadString('\n')
@@ -125,28 +133,49 @@ func fundTransfer(reader *bufio.Reader, userAccount Account) {
 			pl("Invalid input!\nPlease try again!")
 			continue
 		}
-
+		if amount <= 0 {
+			pl("You cannot transfer a negative or zero amount!\nPlease try again!")
+			continue
+		} else if amount > userAccount.balance {
+			pl("Insufficient funds!\nPlease try again!")
+			continue
+		}
 		reader.ReadString('\n')
 
-		for _, recipientAccount := range accounts {
-			if recipientAccount.accountNumber == recipientAccountNumber {
-				if amount >= userAccount.balance {
-					pl("Insufficient funds!\nPlease try again!")
-					continue
-				} else {
-					userAccount.balance -= amount
-					recipientAccount.balance += amount
-					pl("Fund transfer successful!")
-					pl("Your new balance is : ", userAccount.balance)
-					return
-				}
-			}
+		recipientAccount, ok := accounts[recipientAccountNumber]
+
+		if !ok {
+			pl("Recipient account not found!\nPlease try again!")
+			continue
 		}
+
+		recipientAccount.balance += amount
+		userAccount.balance -= amount
+
+		accounts[recipientAccountNumber] = recipientAccount
+		accounts[userAccount.accountNumber] = userAccount
+		accountsByUsername[userAccount.username] = userAccount
+
+		// for _, recipientAccount := range accounts {
+		// 	if recipientAccount.accountNumber == recipientAccountNumber {
+		// 		if amount >= userAccount.balance {
+		// 			pl("Insufficient funds!\nPlease try again!")
+		// 			continue
+		// 		} else {
+		// 			userAccount.balance -= amount
+		// 			recipientAccount.balance += amount
+		// 			pl("Fund transfer successful!")
+		// 			pl("Your new balance is : ", userAccount.balance)
+		// 			return
+		// 		}
+		// 	}
+		// }
 		pl("Account not found!\nPlease try again!")
 	}
 }
 
 func withdraw(reader *bufio.Reader, account Account) {
+	userAccount := accounts[account.accountNumber]
 	for {
 		pl("Enter the amount to withdraw or -1 to cancel : ")
 		input, err := reader.ReadString('\n')
@@ -165,16 +194,29 @@ func withdraw(reader *bufio.Reader, account Account) {
 			continue
 		}
 
-		if amount >= account.balance {
-			pl("Insufficient funds!\nPlease try again!")
+		if amount <= 0 {
+			pl("You cannot withdraw a negative or zero amount!\nPlease try again!")
 			continue
-		} else {
-			account.balance -= amount
-			pl("Withdrawal successful!")
-			pl("Your new balance is : ", account.balance)
-			reader.ReadString('\n')
-			return
 		}
+
+		if amount > account.balance {
+			pl("Insufficient funds!\nPlease try again!")
+		}
+
+		userAccount.balance -= amount
+		accounts[account.accountNumber] = userAccount
+		pl("Withdrawal successful!")
+		pl("Your new balance is : ", userAccount.balance)
+		// if amount >= account.balance {
+		// 	pl("Insufficient funds!\nPlease try again!")
+		// 	continue
+		// } else {
+		// 	account.balance -= amount
+		// 	pl("Withdrawal successful!")
+		// 	pl("Your new balance is : ", account.balance)
+		// 	reader.ReadString('\n')
+		// 	return
+		// }
 	}
 }
 
@@ -235,19 +277,34 @@ func login(reader *bufio.Reader) {
 		password = password[:len(password)-1]
 		reader.ReadString('\n')
 
-		for _, account := range accounts {
-			if account.username == username {
-				if account.password == password {
-					pl("Login successful!")
-					pl("Welcome", username)
-					mainMenu(reader, account)
-				} else {
-					pl("Incorrect password!\nPlease try again!")
-					break
-				}
-			}
+		value, ok := accountsByUsername[username]
+
+		if !ok {
+			pl("Account not found!\nPlease try again!")
+			continue
 		}
-		pl("Account not found!\nPlease try again!")
+
+		if value.password != password {
+			pl("Incorrect password!\nPlease try again!")
+			continue
+		}
+
+		pl("Login successful!")
+		pl("Welcome ", username)
+		mainMenu(reader, value)
+
+		// for _, account := range accounts {
+		// 	if account.username == username {
+		// 		if account.password == password {
+		// 			pl("Login successful!")
+		// 			pl("Welcome", username)
+		// 			mainMenu(reader, account)
+		// 		} else {
+		// 			pl("Incorrect password!\nPlease try again!")
+		// 			break
+		// 		}
+		// 	}
+		// }
 	}
 }
 
@@ -310,11 +367,11 @@ func register(reader *bufio.Reader) {
 		}
 		pl("Account created successfully!")
 		pl("Your account number is: ", accountNumber)
-		accounts = append(accounts, newAccount)
+		accounts[accountNumber] = newAccount
+		accountsByUsername[username] = newAccount
 		reader.ReadString('\n')
-		break
+		return
 	}
-	return
 }
 
 func accountNumberGenerator() int {
