@@ -215,7 +215,7 @@ func withdraw(reader *bufio.Reader, account Account) {
 }
 
 func checkBalance(account Account) {
-	pl("Your balance is : ", account.balance)
+	pl("Your balance is : ", accounts[account.accountNumber].balance)
 }
 
 func loginScreen(reader *bufio.Reader) {
